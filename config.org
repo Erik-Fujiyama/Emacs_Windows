@@ -1,0 +1,361 @@
+* Minor Settings
+** General
+#+begin_src emacs-lisp
+  (setq dired-listing-switches "-lt")
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+    (tool-bar-mode -1)
+    (menu-bar-mode -1)
+    (scroll-bar-mode -1)
+    (global-display-line-numbers-mode)
+  (setq truncate-partial-width-windows nil)
+  (global-visual-line-mode 1)
+
+
+	(global-hl-line-mode)
+	(use-package beacon
+	  :ensure t
+	  :init
+	  (beacon-mode 1))
+	(custom-set-faces
+	 ;; custom-set-faces was added by Custom.
+	 ;; If you edit it by hand, you could mess it up, so be careful.
+	 ;; Your init file should contain only one such instance.
+	 ;; If there is more than one, they won't work right.
+	 '(default ((t (:inherit nil :stipple nil :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 128 :width normal :foundry "PfEd" :family "DejaVu Sans Mono")))))
+	;; Disable the splash screen (to enable it agin, replace the t with 0)
+	(setq inhibit-splash-screen t)
+	(setq-default frame-title-format '("%f [%m]"))
+	(setq make-backup-files nil)
+#+end_src
+** Org-mode
+#+begin_src emacs-lisp
+  (setq org-latex-prefer-user-labels t)
+  (use-package org-bullets
+      :ensure t
+      :config
+      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+    (require 'org-tempo)
+    (tempo-define-template "my-property"
+	'(":PROPERTIES:\n:UNNUMBERED: t\n:END:")
+	"<p")
+    (tempo-define-template "begin"
+	'("#+TITLE: " p "\n#+AUTHOR: Erik S. Fujiyama\n#+OPTIONS: toc:nil\n#+STARTUP: latexpreview\n#+STARTUP: inlineimages\n#+LATEX_HEADER: \\usepackage[margin=1.5cm]{geometry}\n#+BIBLIOGRAPHY: References plain"
+  )
+	"<b")
+  (setq org-emphasis-alist (quote (("!"  (:foreground "red") )
+	       ("/" italic "<i>" "</i>") 
+	       ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
+	       ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
+	       ("=" org-code "<code>" "</code>" verbatim)
+	      ("+" (:strike-through t) "<del>" "</del>"))))
+  (add-to-list 'org-emphasis-alist
+	       '("*" (:foreground "yellow")
+		 ))
+  (setq org-src-fontify-natively t)
+  (local-set-key "\M-\C-g" 'org-plot/gnuplot)
+  (setq org-src-window-setup 'current-window)
+  (setq org-startup-folded t)
+#+end_src
+** Parenthesis
+#+begin_src emacs-lisp
+  ;; autocomplete paired brackets
+  (electric-pair-mode 1)
+  (show-paren-mode 1)
+  (setq electric-pair-inhibit-predicate
+	`(lambda (c)
+	   (if (char-equal c ?<) t (,electric-pair-inhibit-predicate c))))
+#+end_src
+** Keyboard
+#+begin_src emacs-lisp
+  (defun my-insert-tilde ()
+    (interactive)
+    (insert "~"))
+  (global-set-key (kbd "<dead-tilde> <dead-tilde>") #'my-insert-tilde)
+  (require 'iso-transl)
+#+end_src
+* Config edit/reload
+** edit
+#+begin_src emacs-lisp
+  (defun config-visit ()
+    (interactive)
+    (find-file "D:/Program Files (x86)/Emacs/config.org"))
+  (global-set-key (kbd "C-c e") 'config-visit)
+
+  #+end_src
+** reload
+#+begin_src emacs-lisp
+  (defun config-reload ()
+    (interactive)
+    (org-babel-load-file (expand-file-name "D:/Program Files (x86)/Emacs/config.org")))
+  (global-set-key (kbd "C-c r") 'config-reload)
+  
+#+end_src
+* Yasnippet
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :config 
+    (use-package yasnippet-snippets
+      :ensure t)
+    (yas-reload-all))
+  (yas-global-mode 1)
+
+#+end_src
+* Buffers, IDO, M-x
+** Enable IDO
+#+begin_src emacs-lisp
+  (setq ido-enable-flex-matching nil)
+  (setq ido-create-new-buffer 'always)
+  (setq ido-everywhere t)
+  (ido-mode 1)
+#+end_src
+** IDO-Vertial
+#+begin_src emacs-lisp
+(use-package ido-vertical-mode
+:ensure t
+:init
+(ido-vertical-mode 1))
+(setq ido-vertical-define-keys 'C-n-and-C-p-only)
+#+end_src
+** iBuffer
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-x C-b") 'ibuffer)
+#+end_src
+* Avy
+#+begin_src emacs-lisp
+  (use-package avy
+    :ensure t
+    :bind
+    ("M-s" . avy-goto-char))
+#+end_src
+* Switch-window
+#+begin_src emacs-lisp
+  (use-package switch-window
+    :ensure t
+    :config
+    (setq switch-window-input-style 'minibuffer)
+    (setq switch-window-increase 4)
+    (setq switch-window-threshold 2)
+    (setq switch-window-shortcut-style 'qwerty)
+    (setq switch-window-qwerty-shortcuts
+          '("a" "s" "d" "f" "g" "j" "k" "l"))
+    :bind
+    ([remap other-window] . switch-window))
+  (defun split-and-follow-horizontally ()
+    (interactive)
+    (split-window-below)
+    (balance-windows)
+    (other-window 1))
+  (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+
+  (defun split-and-follow-vertically ()
+    (interactive)
+    (split-window-right)
+    (balance-windows)
+    (other-window 1))
+  (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+#+end_src
+* Dashboard
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook)
+    (setq dashboard '((recents .10)))
+    (setq dashboard-banner-logo-title "Hello Erik"))
+    (setq show-week-agenda-p t)
+#+end_src
+* Folding 
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<f5>") 'set-selective-display-dlw)
+
+  (defun set-selective-display-dlw (&optional level)
+  "Fold text indented same of more than the cursor.
+  If level is set, set the indent level to LEVEL.
+  If 'selective-display' is already set to LEVEL, clicking
+  F5 again will unset 'selective-display' by setting it to 0."
+    (interactive "P")
+    (if (eq selective-display (1+ (current-column)))
+        (set-selective-display 0)
+      (set-selective-display (or level (1+ (current-column))))))
+#+end_src
+* Theme
+#+begin_src emacs-lisp
+(add-to-list 'load-path "C:/Users/stand/AppData/Roaming/.emacs.d/elpa/spacemacs-theme-0.2")
+(add-to-list 'custom-theme-load-path "C:/Users/stand/AppData/Roaming/.emacs.d/elpa/spacemacs-theme-0.2")
+(load-theme 'spacemacs-dark t)
+#+end_src
+* PDF
+#+begin_src emacs-lisp
+  (add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
+  (add-hook 'doc-view-mode-hook 'auto-revert-mode)
+   (use-package pdf-tools
+      :ensure t
+      :config)
+  (add-hook 'pdf-view-mode-hook (lambda () (cua-mode 0)))
+  (use-package org-pdf-tools
+    :hook (org-load-hook . org-pdftools-setup-link))
+#+end_src
+* Latex
+#+begin_src emacs-lisp
+  (use-package tex
+    :ensure auctex)
+  (setq auto-mode-alist
+	(cons '("\\.m$" . octave-mode) auto-mode-alist))
+  (setq TeX-parse-self t) ; Enable parse on load.
+  (setq TeX-auto-save t) ; Enable parse on save.
+  (setq-default TeX-master nil) ; Query for master file
+  (require 'reftex)
+  ;; Turn on RefTeX in AUCTeX
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-ref-macro-prompt nil)
+  ;; Activate nice interface between RefTeX and AUCTeX
+  (setq reftex-plug-into-AUCTeX t)
+  (add-to-list 'load-path "C:/Users/stand/AppData/Roaming/.emacs.d/elpa")  
+  (require 'latex-preview-pane)
+  (defun update-eqn ()
+    (interactive)
+    (save-excursion
+      (goto-char (point-min))
+      (let ((count 1))
+	(while (re-search-forward "\\+NAME: eqn:\\([0-9]+\\)" nil t)
+	  (replace-match (format "%d" count) nil nil nil 1)
+	  (setq count (1+ count)))))
+    )
+#+end_src
+* Input Cntr Meta
+#+begin_src emacs-lisp
+  ;; ;; There seems to be no built-in mechanism to swap modifier keys in
+  ;;  ;; Emacs, but it can be accomplished (for the most part) by
+  ;;  ;; translating a near-exhaustive list of modifiable keys.  In the case
+  ;;  ;; of 'control and 'meta, some keys must be omitted to avoid errors or
+  ;;  ;; other undesired effects.
+  ;;  (defun my/make-key-string (modsymbol basic-event)
+  ;;    "Convert the combination of MODSYMBOL and BASIC-EVENT.
+  ;;  BASIC-EVENT can be a character or a function-key symbol.  The
+  ;;  return value can be used with `define-key'."
+  ;;    (vector (event-convert-list `(,modsymbol ,basic-event))))
+
+  ;;  ;; Escaped chars are:
+  ;;  ;; tab return space del backspace (typically translated to del)
+  ;;  (dolist (char (append '(up down left right menu print scroll pause
+  ;; 			 insert delete home end prior next
+  ;; 			 tab return space backspace escape
+  ;; 			 f1 f2 f3 f4 f5 f6 f7 f8 f9 f10 f11 f12)
+  ;; 		       ;; Escape gets translated to `C-\[' in `local-function-key-map'
+  ;; 		       ;; We want that to keep working, so we don't swap `C-\[' with `M-\['.
+  ;; 		       (remq ?\[ (number-sequence 33 126))))
+  ;; 	 ;; Changing this to use `input-decode-map', as it works for more keys.
+  ;; 	 (define-key input-decode-map (my/make-key-string 'control char) (my/make-key-string 'meta char))
+  ;; 	 (define-key input-decode-map (my/make-key-string 'meta char) (my/make-key-string 'control char)))
+#+end_src
+* Undo tree
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    :ensure t
+    :config)
+  (global-undo-tree-mode)
+#+end_src
+* Spellcheck
+#+begin_src emacs-lisp
+  (setq ispell-program-name "D:/Program Files (x86)/hunspell-1.3.2-3-w32-bin/bin/hunspell.exe")
+
+  (setq ispell-local-dictionary-alist
+	'(("en_GB" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_GB") nil utf-8)))
+
+  (when (boundp 'ispell-hunspell-dictionary-alist)
+    (setq ispell-hunspell-dictionary-alist ispell-local-dictionary-alist))
+
+  (setq hunspell-default-dict "en_GB")
+  (add-hook 'org-mode-hook 'turn-on-flyspell)
+  (add-hook 'LaTeX-mode-hook #'turn-on-flyspell)
+  (setq ispell-personal-dictionary (expand-file-name "C:/Users/stand/AppData/Roaming/.emacs.d/personalDictionary") )
+
+
+#+end_src
+* Julia
+#+begin_src emacs-lisp
+    (use-package julia-mode
+       :ensure t
+       :init)
+     (require 'julia-mode)
+
+     (use-package julia-repl
+       :ensure t
+       :init)
+  (require 'julia-repl)
+     (add-hook 'julia-mode-hook 'julia-repl-mode) ;; always use minor mode
+  (add-to-list 'load-path "C:\\Users\\stand\\.julia\\juliaup\\julia-1.10.1+0.x64.w64.mingw32\\bin\\julia.exe")
+  (setq inferior-julia-program-name "C:\\Users\\stand\\.julia\\juliaup\\julia-1.10.1+0.x64.w64.mingw32\\bin\\julia.exe")
+
+#+end_src
+* Bibtex
+#+begin_src emacs-lisp
+    (use-package bibtex
+      :custom
+      (bibtex-dialect 'BibTeX)
+      (bibtex-user-optional-fields
+       '(("keywords" "Keywords to describe the entry" "")
+	 ("file" "Link to a document file." "" )))
+      (bibtex-align-at-equal-sign t))
+#+end_src
+* Biblio
+#+begin_src emacs-lisp
+  (use-package biblio
+    :ensure t
+    :init)
+#+end_src
+* EWS
+#+begin_src emacs-lisp
+  (defgroup ews ()
+    "Emacs Writing Studio."
+    :group 'files
+    :link '(url-link :tag "Homepage" "https://lucidmanager.org/tags/emacs/"))
+
+  (defcustom ews-documents-directory
+    (concat (file-name-as-directory (getenv "HOME")) "Documents")
+    "D:/OneDrive/Studies/Total_Bibliography"
+    :group 'ews
+    :type 'directory)
+
+
+  (defcustom ews-bibliography-directory
+    (concat (file-name-as-directory ews-documents-directory) "library")
+    "D:/OneDrive/Studies/Total_Bibliography"
+    :group 'ews
+    :type 'directory)
+
+
+    (defcustom ews-notes-directory
+      (concat (file-name-as-directory ews-documents-directory) "notes")
+      "D:/OneDrive/Studies/Total_Bibliography"
+      :group 'ews
+      :type 'directory)
+#+end_src
+* Citar
+#+begin_src emacs-lisp
+  (use-package citar
+    :custom
+    (org-cite-global-bibliography
+     (directory-files ews-bibliography-directory t
+		      "^[A-Z|a-z|0-9].+.bib$"))
+    (citar-bibliography org-cite-global-bibliography)
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    :bind
+    (("C-c w c c" . citar-open)
+     (:map org-mode-map
+	   :package org
+	   ("C-c w C". #'org-cite-insert))))
+#+end_src
+* Magit
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t)
+  (setq package-check-signature nil)
+  (global-set-key (kbd "C-x g") 'magit-status)
+  (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
+#+end_src
+* Extra
+
